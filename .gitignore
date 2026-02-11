@@ -1,0 +1,10 @@
+result
+result-*
+
+/etc/nixos/secrets/
+secrets/
+
+.direnv/
+.envrc
+
+old/
