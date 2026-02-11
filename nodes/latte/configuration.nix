@@ -14,17 +14,11 @@
   boot.kernelPatches = [
     {
       name = "i915-fix";
-      patch = pkgs.fetchurl {
-        url = "https://gitlab.postmarketos.org/postmarketOS/pmaports/-/raw/master/device/testing/linux-xiaomi-latte/latte-i915-fix.patch";
-        sha256 = "168r3jpvg3dld683ydvpwrp1mbfclaq52idp4jv04xlj0lbjm3xb";
-      };
+      patch = ./patches/latte-i915-fix-6.18.patch;
     }
     {
       name = "audio-fix";
-      patch = pkgs.fetchurl {
-        url = "https://gitlab.postmarketos.org/postmarketOS/pmaports/-/raw/master/device/testing/linux-xiaomi-latte/latte-audio-fix.patch";
-        sha256 = "011i83vh06d7j7finmdv3m208hgyzl86a057aq10cn2qfxb2hmdc";
-      };
+      patch = ./patches/latte-audio-fix-6.18.patch;
     }
   ];
 
@@ -79,6 +73,6 @@
     lshw
   ];
 
-  # S   tate version
+  # State version
   system.stateVersion = "24.11";
 }
