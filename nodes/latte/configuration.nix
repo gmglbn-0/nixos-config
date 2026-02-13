@@ -61,13 +61,6 @@
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
 
-  # User
-  users.users.gmglbn_0 = {
-    isNormalUser = true;
-    description = "Kita Lembrik";
-    extraGroups = [ "networkmanager" "wheel" "video" "audio" ];
-  };
-
   # System packages
   environment.systemPackages = with pkgs; [
     lshw

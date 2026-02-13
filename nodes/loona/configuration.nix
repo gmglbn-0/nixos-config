@@ -108,6 +108,8 @@
   # Virtualization
   virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = [ "gmglbn_0" ];
 
   # iOS
   services.usbmuxd.enable = true;
@@ -143,9 +145,7 @@
 
   # User
   users.users.gmglbn_0 = {
-    isNormalUser = true;
-    description = "Kita Lembrik";
-    extraGroups = [ "networkmanager" "wheel" "libvirtd" "kvm" ];
+    extraGroups = [ "libvirtd" "kvm" ];
     packages = with pkgs; [
       thunderbird
       qbittorrent-enhanced
@@ -175,7 +175,9 @@
       rustfmt
       clippy
       rust-analyzer
+      rustup
       pkg-config
+      systemd.dev
       lact
       gcc
       freetype

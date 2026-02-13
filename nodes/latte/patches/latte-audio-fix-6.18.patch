@@ -1,7 +1,51 @@
-diff --color -u -r -N a/drivers/platform/x86/x86-android-tablets/other.c b/drivers/platform/x86/x86-android-tablets/other.c
---- a/drivers/platform/x86/x86-android-tablets/other.c	2025-04-27 15:56:35.538630075 +0800
-+++ b/drivers/platform/x86/x86-android-tablets/other.c	2025-04-27 16:02:29.437301184 +0800
-@@ -918,12 +918,45 @@
+--- a/drivers/platform/x86/x86-android-tablets/other.c	2026-02-11 22:02:36.593199747 +0400
++++ b/drivers/platform/x86/x86-android-tablets/other.c	2026-02-11 22:04:40.465662550 +0400
+@@ -397,6 +397,22 @@
+ 		},
+ 		.adapter_path = "\\_SB_.PCI0.I2C3",
+ 	}, {
++		/* TFA9890A audio amplifier */
++		.board_info = {
++			.type = "tfa9890",
++			.addr = 0x34,
++			.dev_name = "tfa9890:00",
++		},
++		.adapter_path = "\\_SB_.PCI0.I2C2",
++	}, {
++		/* TFA9890A audio amplifier */
++		.board_info = {
++			.type = "tfa9890",
++			.addr = 0x37,
++			.dev_name = "tfa9890:01",
++		},
++		.adapter_path = "\\_SB_.PCI0.I2C2",
++	}, {
+ 		/* FT5416DQ9 touchscreen controller */
+ 		.board_info = {
+ 			.type = "edt-ft5x06",
+@@ -824,8 +840,21 @@
+ 	return pwm_apply_might_sleep(xiaomi_mipad2_led_pwm, &state);
+ }
+ 
++static struct gpiod_lookup_table xiaomi_mipad2_codec_rt5659_gpios = {
++	.dev_id = "i2c-10EC5659:01",
++	.table = {
++		/* INT33FF:00 gpio 81 */
++		GPIO_LOOKUP("INT33FF:00", 593 - 512, "ldo1-en", GPIO_ACTIVE_HIGH),
++		/* INT33FF:01 gpio 46 */
++		GPIO_LOOKUP("INT33FF:01", 656 - 610, "reset", GPIO_ACTIVE_HIGH),
++		{ }
++	},
++};
++
+ static int __init xiaomi_mipad2_init(struct device *dev)
+ {
++	gpiod_add_lookup_table(&xiaomi_mipad2_codec_rt5659_gpios);
++
+ 	struct led_classdev *led_cdev;
+ 
+ 	xiaomi_mipad2_led_pwm = devm_pwm_get(dev, "pwm_soc_lpss_2");
+@@ -872,12 +901,34 @@
  			.swnode = &ktd2026_node,
  		},
  		.adapter_path = "\\_SB_.PCI0.I2C3",
@@ -24,28 +68,17 @@ diff --color -u -r -N a/drivers/platform/x86/x86-android-tablets/other.c b/drive
  	},
  };
  
-+static struct gpiod_lookup_table xiaomi_mipad2_codec_rt5659_gpios = {
-+	.dev_id = "i2c-10EC5659:01",
-+	.table = {
-+		/* INT33FF:00 gpio 81 */
-+		GPIO_LOOKUP("INT33FF:00", 593 - 512, "ldo1-en", GPIO_ACTIVE_HIGH),
-+		/* INT33FF:01 gpio 46 */
-+		GPIO_LOOKUP("INT33FF:01", 656 - 610, "reset", GPIO_ACTIVE_HIGH),
-+		{ }
-+	},
-+};
-+
-+static struct gpiod_lookup_table * const xiaomi_mipad2_gpios[] = {
-+	&xiaomi_mipad2_codec_rt5659_gpios,
-+	NULL
-+};
++static void xiaomi_mipad2_exit(void)
++{
++	gpiod_remove_lookup_table(&xiaomi_mipad2_codec_rt5659_gpios);
++}
 +
  const struct x86_dev_info xiaomi_mipad2_info __initconst = {
  	.i2c_client_info = xiaomi_mipad2_i2c_clients,
  	.i2c_client_count = ARRAY_SIZE(xiaomi_mipad2_i2c_clients),
  	.swnode_group = ktd2026_node_group,
  	.init = xiaomi_mipad2_init,
-+	.gpiod_lookup_tables = xiaomi_mipad2_gpios,
++	.exit = xiaomi_mipad2_exit,
  };
 diff --color -u -r -N a/sound/soc/codecs/rt5659.c b/sound/soc/codecs/rt5659.c
 --- a/sound/soc/codecs/rt5659.c	2025-04-27 15:56:35.707676732 +0800
@@ -580,7 +613,7 @@ diff --color -u -r -N a/sound/soc/intel/boards/cht_bsw_rt5659.c b/sound/soc/inte
 + 
 +     /* Set codec bias level */
 +     card->dapm.bias_level = SND_SOC_BIAS_OFF;
-+     card->dapm.idle_bias_off = true;
++     card->dapm.idle_bias = false;
 + 
 +     desc = devm_gpiod_get_index(component->dev, NULL, 0, 0);
 +     if (!IS_ERR(desc)) {

@@ -112,15 +112,8 @@
     PermitRootLogin = "yes";
   };
 
-  # User
-  users.users.gmglbn_0 = {
-    isNormalUser = true;
-    description = "Kita Lembrik";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPwrKg5K7ntD1x1WuVIl23zsTdppkd3gGfFsP24bUTkA"
-    ];
-  };
+  # User (extends common)
+  users.users.gmglbn_0.extraGroups = [ "docker" ];
 
   # State version
   system.stateVersion = "23.05";
