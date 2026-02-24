@@ -14,6 +14,9 @@
     ncdu
     rsync
     unzip
+    hyfetch
+    fastfetch
+    zsh-powerlevel10k
   ];
 
   services.openssh.enable = true;
@@ -27,6 +30,12 @@
   nix.settings.auto-optimise-store = true;
 
   programs.mtr.enable = true;
+  programs.zsh.enable = true;
+  programs.zsh.ohMyZsh = {
+    enable = true;
+    plugins = [ "git" "sudo" "docker" "kubectl" ];
+  };
+  users.defaultUserShell = pkgs.zsh;
 
   # User
   users.users.gmglbn_0 = {

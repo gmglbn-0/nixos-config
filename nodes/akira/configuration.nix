@@ -11,7 +11,7 @@
 
   # Networking
   networking.networkmanager.enable = true;
-  networking.firewall.enable = true;
+  networking.firewall.enable = false;
 
   # Time & Locale
   time.timeZone = "UTC";
@@ -19,13 +19,7 @@
 
   # Filesystem 
   fileSystems."/data" = {
-    device = "/dev/disk/by-label/ssd500";
-    fsType = "btrfs";
-    options = [ "defaults" "nofail" ];
-  };
-
-  fileSystems."/media" = {
-    device = "/dev/disk/by-label/RAID0";
+    device = "/dev/sda2";
     fsType = "btrfs";
     options = [ "defaults" "nofail" ];
   };
@@ -37,7 +31,14 @@
       data-root = "/data/docker";
     };
   };
-  
+
+  # Jellyfin
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;
+    dataDir = "/data/jellyfin";
+  };
+
   # Samba
   services.samba = {
     enable = true;
@@ -47,27 +48,11 @@
         "workgroup" = "WORKGROUP";
         "server string" = "akira";
         "security" = "user";
-        "map to guest" = "bad user";
         "hosts allow" = "192.168.106. 127.0.0.1 100.";
-        "log file" = "/var/log/samba/%m.log";
-        "max log size" = "50";
-        
-        # Performance Tweaks
-        "socket options" = "TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=131072 SO_SNDBUF=131072";
-        "read raw" = "yes";
-        "write raw" = "yes";
-        "oplocks" = "yes";
-        "max xmit" = "65535";
-        "deadtime" = "15";
-        "getwd cache" = "yes";
-        "lpq cache time" = "30";
-        "use sendfile" = "yes";
-        "aio read size" = "16384";
-        "aio write size" = "16384";
-        "server signing" = "no";
-        "strict locking" = "no";
+        "guest account" = "nobody";
+        "map to guest" = "bad user";
       };
-      "data" = {
+      "akira-smb500" = {
         "path" = "/data";
         "browseable" = "yes";
         "read only" = "no";
@@ -75,30 +60,6 @@
         "create mask" = "0644";
         "directory mask" = "0755";
       };
-      "media" = {
-        "path" = "/media";
-        "browseable" = "yes";
-        "read only" = "no";
-        "guest ok" = "no";
-        "create mask" = "0644";
-        "directory mask" = "0755";
-      };
-    };
-  };
-
-
-  # qBittorrent
-  systemd.services.qbittorrent-nox = {
-    description = "qBittorrent CLI";
-    documentation = [ "man:qbittorrent-nox(1)" ];
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      User = "gmglbn_0";
-      Group = "users";
-      ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox --webui-port=8081";
-      Restart = "on-failure";
     };
   };
 
@@ -115,7 +76,7 @@
         type = "slave";
       };
       settings = {
-        SHUTDOWNCMD = "sudo /run/current-system/sw/bin/systemctl hibernate";
+        SHUTDOWNCMD = "/run/current-system/sw/bin/sudo ${pkgs.systemd}/bin/systemctl hibernate";
         FINALDELAY = 5;
       };
     };
@@ -127,7 +88,7 @@
       users = [ "nutmon" ];
       commands = [
         {
-          command = "/run/current-system/sw/bin/systemctl hibernate";
+          command = "${pkgs.systemd}/bin/systemctl hibernate";
           options = [ "NOPASSWD" ];
         }
       ];
