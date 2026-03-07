@@ -6,8 +6,7 @@ This repository contains NixOS configurations for all my systems using Nix flake
 
 ### akira (Home Server)
 - **Hardware**: i7-4770, 16GB RAM
-  - 16GB NVMe (system)
-  - 512GB SSD (Docker/VMs at `/data`)
+  - 512GB NVMe (system)
   - 6TB HDD (media storage)
 - **Services**: Docker, Jellyfin, Samba, Tailscale
 - **Special**: UPS monitoring with auto-hibernate
@@ -22,7 +21,7 @@ This repository contains NixOS configurations for all my systems using Nix flake
 ### latte (Tablet)
 - **Hardware**: Xiaomi Mi Pad 2
 - **Desktop**: Phosh (mobile interface)
-- **Purpose**: Personal media (AI-slop) consumption
+- **Purpose**: AI-slop consumption
 
 ## 📁 Repository Structure
 
@@ -182,7 +181,7 @@ Format all nix files:
 find . -name '*.nix' -exec nixpkgs-fmt {} \;
 ```
 
-## 📚 Resources
+# 📚 Resources
 
 - [NixOS Manual](https://nixos.org/manual/nixos/stable/)
 - [Nix Flakes](https://nixos.wiki/wiki/Flakes)

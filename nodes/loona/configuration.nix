@@ -131,6 +131,7 @@
     plugins = [ "git" "sudo" "docker" "kubectl" ];
   };
   users.defaultUserShell = pkgs.zsh;
+  programs.gamemode.enable = true;
 
   # nix-ld
   programs.nix-ld.enable = true;
@@ -186,6 +187,7 @@
       nheko
       deltachat-desktop
       howdy
+      lm_sensors
     ];
   };
 
