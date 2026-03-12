@@ -27,12 +27,12 @@
 
   # ModemManager
   networking.modemmanager.enable = true;
-  
+
   # Quectel modem fix
   services.quectel-modem-fix.enable = true;
 
   # Time & Locale
-  time.timeZone = "Asia/Yerevan";
+  time.timeZone = "Asia/Tbilisi";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_US.UTF-8";
@@ -131,7 +131,6 @@
     plugins = [ "git" "sudo" "docker" "kubectl" ];
   };
   users.defaultUserShell = pkgs.zsh;
-  programs.gamemode.enable = true;
 
   # nix-ld
   programs.nix-ld.enable = true;
@@ -186,8 +185,8 @@
       antigravity
       nheko
       deltachat-desktop
-      howdy
       lm_sensors
+      signal-desktop
     ];
   };
 
