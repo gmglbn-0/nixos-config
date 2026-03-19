@@ -27,6 +27,20 @@
     with builtins; let
       # Helper functions
       inherit (nixpkgs) lib;
+
+      # Overlay: gnome-catppuccin GTK/Shell theme
+      gnomeCatppuccinOverlay = final: prev: {
+        gnome-catppuccin =
+          let
+            src = prev.fetchFromGitHub {
+              owner = "elisesouche";
+              repo = "gnome-catppuccin";
+              rev = "v1.0";
+              hash = "sha256-R/pIVO8I3d5cAhgGSHthOpjHEo1Oxbaepb30raxWRnc=";
+              fetchSubmodules = true;
+            };
+          in prev.callPackage "${src}" {};
+      };
       
       # Function to build a NixOS system configuration
       buildSystem = hostname: system: modules:
@@ -48,6 +62,9 @@
             
             # Set hostname
             ({ lib, ... }: { networking.hostName = hostname; })
+
+            # Apply overlays globally
+            { nixpkgs.overlays = [ gnomeCatppuccinOverlay ]; }
           ] ++ modules;
         };
       

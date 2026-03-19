@@ -150,20 +150,16 @@
       thunderbird
       qbittorrent-enhanced
       krita
-      chromium
       ayugram-desktop
       zed-editor
       wakatime-cli
-      libimobiledevice
-      ifuse
       parsec-bin
       gnomeExtensions.appindicator
+      gnomeExtensions.user-themes
+      gnome-catppuccin
       obs-studio
       ptyxis
-      twinkle
-      gnome-boxes
       dnsmasq
-      phodav
       libmbim
       libqmi
       pciutils
@@ -177,8 +173,6 @@
       rust-analyzer
       rustup
       pkg-config
-      systemd.dev
-      lact
       gcc
       freetype
       fontconfig
@@ -187,6 +181,7 @@
       deltachat-desktop
       lm_sensors
       signal-desktop
+      chromium
     ];
   };
 
