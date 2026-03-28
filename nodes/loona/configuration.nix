@@ -17,9 +17,10 @@
 
   # Boot
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.initrd.systemd.enable = true;
+  boot.kernelParams = [ "modprobe.blacklist=spi-nor" "modprobe.blacklist=kvm_amd" "i2c-i801.disable_features=0x10" ];
 
   # Networking
   networking.networkmanager.enable = true;
@@ -182,6 +183,7 @@
       lm_sensors
       signal-desktop
       chromium
+      slack
     ];
   };
 
