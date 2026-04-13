@@ -78,6 +78,13 @@
         "aio write size" = "16384";
         "server signing" = "no";
         "strict locking" = "no";
+        "strict sync" = "no";
+
+        # Apple / Time Machine support
+        "vfs objects" = "catia fruit streams_xattr";
+        "fruit:aapl" = "yes";
+        "fruit:nfs_aces" = "no";
+        "fruit:model" = "MacSamba";
       };
       "media" = {
         "path" = "/media";
@@ -87,9 +94,50 @@
         "create mask" = "0644";
         "directory mask" = "0755";
       };
+      "timemachine-dipierro" = {
+        "path" = "/media/timemachine/dipierro";
+        "valid users" = "dipierro";
+        "browseable" = "yes";
+        "writable" = "yes";
+        "fruit:time machine" = "yes";
+        "fruit:time machine max size" = "1536G";
+      };
     };
   };
 
+  # Avahi (mDNS for Time Machine discovery)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    publish = {
+      enable = true;
+      userServices = true;
+    };
+    extraServiceFiles = {
+      smb = ''
+        <?xml version="1.0" standalone='no'?>
+        <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+        <service-group>
+          <name replace-wildcards="yes">%h</name>
+          <service>
+            <type>_smb._tcp</type>
+            <port>445</port>
+          </service>
+          <service>
+            <type>_device-info._tcp</type>
+            <port>0</port>
+            <txt-record>model=TimeCapsule8,119</txt-record>
+          </service>
+          <service>
+            <type>_adisk._tcp</type>
+            <port>9</port>
+            <txt-record>sys=waMa=0,adVF=0x100</txt-record>
+            <txt-record>dk0=adVN=timemachine-dipierro,adVF=0x82</txt-record>
+          </service>
+        </service-group>
+      '';
+    };
+  };
 
   # WebDAV
   services.webdav = {
@@ -229,7 +277,7 @@
   };
 
   networking.firewall.allowedTCPPorts = [ 445 8000 8081 8083 ];
-  networking.firewall.allowedUDPPorts = [ 51820 ];  # WireGuard
+  networking.firewall.allowedUDPPorts = [ 5353 51820 ];  # mDNS, WireGuard
 
   # State version
   system.stateVersion = "23.05";

@@ -143,6 +143,7 @@
 
   # Unfree and insecure
   nixpkgs.config.permittedInsecurePackages = [ "olm-3.2.16" ];
+  nixpkgs.config.permittedUnfreePackages = [ "antigravity" ];
 
   # User
   users.users.gmglbn_0 = {
@@ -184,6 +185,8 @@
       signal-desktop
       chromium
       slack
+      vlc 
+      mpv
     ];
   };
 
