@@ -18,7 +18,7 @@
   # Boot
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
-  boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.initrd.kernelModules = [ "amdgpu" "i915" ];
   boot.initrd.systemd.enable = true;
   boot.kernelParams = [ "modprobe.blacklist=spi-nor" "modprobe.blacklist=kvm_amd" "i2c-i801.disable_features=0x10" ];
 
@@ -67,8 +67,15 @@
       mesa
       libva-vdpau-driver
       libvdpau-va-gl
+      intel-media-driver
+      intel-vaapi-driver
+      intel-compute-runtime
     ];
   };
+
+  # Power and Thermal Management
+  services.thermald.enable = true;
+  services.power-profiles-daemon.enable = true;
   hardware.amdgpu.opencl.enable = true;
 
   # Audio
@@ -102,9 +109,48 @@
   services.hardware.bolt.enable = true;
 
   # Fingerprint
-  services.fprintd.enable = true;
-  security.pam.services.login.fprintAuth = lib.mkForce true;
-  security.pam.services.gdm-fingerprint.fprintAuth = true;
+  services.fprintd = {
+    enable = true;
+    tod = {
+      enable = true;
+      driver = pkgs.libfprint-2-tod1-goodix;
+    };
+  };
+  security.pam.services = let
+    lidCheckScript = pkgs.writeShellScript "is-lid-open" ''
+      set -eoui pipefail
+      lidstate="$(${pkgs.systemd}/bin/busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager LidClosed 2>/dev/null || echo 'b false')"
+      if [ "''${lidstate}" = "b false" ]; then
+        exit 0
+      fi
+      exit 1
+    '';
+    lidCheckRule = {
+      enable = true;
+      control = "[success=ok default=1]";
+      modulePath = "${pkgs.pam}/lib/security/pam_exec.so";
+      args = [ "quiet" "quiet_log" "${lidCheckScript}" ];
+    };
+  in {
+    login.fprintAuth = lib.mkForce true;
+    gdm-fingerprint.fprintAuth = true;
+
+    login.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
+      order = config.security.pam.services.login.rules.auth.fprintd.order - 1;
+    };
+    gdm-fingerprint.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
+      order = config.security.pam.services.gdm-fingerprint.rules.auth.fprintd.order - 1;
+    };
+    sudo.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
+      order = config.security.pam.services.sudo.rules.auth.fprintd.order - 1;
+    };
+    su.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
+      order = config.security.pam.services.su.rules.auth.fprintd.order - 1;
+    };
+    polkit-1.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
+      order = config.security.pam.services.polkit-1.rules.auth.fprintd.order - 1;
+    };
+  };
 
   # TPM 2.0
   security.tpm2 = {
@@ -136,7 +182,7 @@
   programs.zsh.enable = true;
   programs.zsh.ohMyZsh = {
     enable = true;
-    plugins = [ "git" "sudo" "docker" "kubectl" ];
+    plugins = [ "git" "sudo" "kubectl" ];
   };
   users.defaultUserShell = pkgs.zsh;
 
@@ -150,7 +196,7 @@
 
   # Unfree and insecure
   nixpkgs.config.permittedInsecurePackages = [ "olm-3.2.16" ];
-  nixpkgs.config.permittedUnfreePackages = [ "antigravity" ];
+  nixpkgs.config.permittedUnfreePackages = [ "antigravity" "libfprint-2-tod1-goodix" ];
 
   # User
   users.users.gmglbn_0 = {
