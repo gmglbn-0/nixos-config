@@ -61,6 +61,13 @@
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
+    extraPackages = with pkgs; [
+      libva
+      libva-utils
+      mesa
+      libva-vdpau-driver
+      libvdpau-va-gl
+    ];
   };
   hardware.amdgpu.opencl.enable = true;
 
@@ -147,7 +154,7 @@
 
   # User
   users.users.gmglbn_0 = {
-    extraGroups = [ "libvirtd" "kvm" ];
+    extraGroups = [ "libvirtd" "kvm" "video" "render" ];
     packages = with pkgs; [
       thunderbird
       qbittorrent-enhanced
@@ -187,6 +194,9 @@
       slack
       vlc 
       mpv
+      modrinth-app
+      eden
+      bottles
     ];
   };
 
@@ -197,6 +207,17 @@
     hyfetch
     modemmanager
   ];
+
+  services.sunshine = {
+    enable = true;
+    autoStart = true;
+    capSysAdmin = true;
+    openFirewall = true;
+    package = pkgs.sunshine;
+    settings = {
+      capture_method = "wayland"; 
+    };    
+  };
 
   # State version
   system.stateVersion = "25.11";

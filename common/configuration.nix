@@ -2,7 +2,7 @@
 
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  
+
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
@@ -36,7 +36,7 @@
     plugins = [ "git" "sudo" "docker" "kubectl" ];
   };
   users.defaultUserShell = pkgs.zsh;
-
+  
   # User
   users.users.gmglbn_0 = {
     isNormalUser = true;
