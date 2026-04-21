@@ -10,6 +10,7 @@
     wget
     git
     htop
+    bottom
     tmux
     ncdu
     rsync
