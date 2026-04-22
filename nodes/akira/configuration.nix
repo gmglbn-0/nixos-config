@@ -47,6 +47,15 @@
       data-root = "/data/docker";
     };
   };
+
+  # OpenSpeedTest
+  virtualisation.oci-containers.containers.openspeedtest = {
+    image = "openspeedtest/latest";
+    ports = [
+      "3000:3000"
+      "3001:3001"
+    ];
+  };
   
   # Samba
   services.samba = {
@@ -220,7 +229,7 @@
   powerManagement.powertop.enable = true;
   powerManagement.cpuFreqGovernor = "powersave";
 
-  environment.systemPackages = [ pkgs.hdparm ];
+  environment.systemPackages = [ pkgs.hdparm pkgs.lm_sensors pkgs.smartmontools pkgs.hddtemp ];
 
   systemd.services.hdparm-spindown = {
     description = "hdparm-spindown service";
@@ -243,7 +252,7 @@
   '';
 
   # Hardware OpenGL (Mesa) for VM 3D Acceleration
-  hardware.opengl.enable = true;
+  hardware.graphics.enable = true;
 
   # Tailscale
   services.tailscale.enable = true;
@@ -254,8 +263,12 @@
   # SSH
   services.openssh.settings = {
     PasswordAuthentication = false;
-    PermitRootLogin = "no";
+    PermitRootLogin = "prohibit-password";
   };
+
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB8hdK1kb0EHpDzC5WTLkQ4kS5GFt8IBZRjjgNx7SKj8"
+  ];
 
   # User (extends common)
   users.users.gmglbn_0.extraGroups = [ "docker" ];
@@ -279,7 +292,7 @@
     htpasswd-file = "/media/restic/.htpasswd";
   };
 
-  networking.firewall.allowedTCPPorts = [ 445 8000 8081 8083 946 ];
+  networking.firewall.allowedTCPPorts = [ 445 3000 3001 8000 8081 8083 946 ];
   networking.firewall.allowedUDPPorts = [ 5353 51820 ];  # mDNS, WireGuard
 
   # Windows 11 VM
@@ -299,11 +312,6 @@
     after = [ "swtpm-win11.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
-      ExecStartPre = [
-        "${pkgs.coreutils}/bin/mkdir -p /var/lib/vm/win11"
-        "${pkgs.bash}/bin/sh -c 'if [ ! -f /var/lib/vm/win11/OVMF_VARS.fd ]; then ${pkgs.coreutils}/bin/cp --no-preserve=mode ${pkgs.OVMFFull.fd}/FV/OVMF_VARS.fd /var/lib/vm/win11/OVMF_VARS.fd; fi'"
-        "${pkgs.bash}/bin/sh -c 'if [ ! -f /var/lib/vm/win11/disk.qcow2 ]; then ${pkgs.qemu_kvm}/bin/qemu-img create -f qcow2 /var/lib/vm/win11/disk.qcow2 120G; fi'"
-      ];
       ExecStart = ''
         ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 -name win11 -enable-kvm -m 6G -smp 4 \
           -cpu host,hv_relaxed,hv_spinlocks=0x1fff,hv_vapic,hv_time -machine q35 \
