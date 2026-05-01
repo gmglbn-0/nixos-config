@@ -33,7 +33,7 @@
   services.quectel-modem-fix.enable = true;
 
   # Time & Locale
-  time.timeZone = "Asia/Tbilisi";
+  time.timeZone = "Asia/Yerevan";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_US.UTF-8";
@@ -76,6 +76,13 @@
   # Power and Thermal Management
   services.thermald.enable = true;
   services.power-profiles-daemon.enable = true;
+  services.upower = {
+    enable = true;
+    percentageLow = 10;
+    percentageCritical = 5;
+    percentageAction = 3;
+    criticalPowerAction = "Hibernate";
+  };
   hardware.amdgpu.opencl.enable = true;
 
   # Audio
@@ -109,48 +116,7 @@
   services.hardware.bolt.enable = true;
 
   # Fingerprint
-  services.fprintd = {
-    enable = true;
-    tod = {
-      enable = true;
-      driver = pkgs.libfprint-2-tod1-goodix;
-    };
-  };
-  security.pam.services = let
-    lidCheckScript = pkgs.writeShellScript "is-lid-open" ''
-      set -eoui pipefail
-      lidstate="$(${pkgs.systemd}/bin/busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager LidClosed 2>/dev/null || echo 'b false')"
-      if [ "''${lidstate}" = "b false" ]; then
-        exit 0
-      fi
-      exit 1
-    '';
-    lidCheckRule = {
-      enable = true;
-      control = "[success=ok default=1]";
-      modulePath = "${pkgs.pam}/lib/security/pam_exec.so";
-      args = [ "quiet" "quiet_log" "${lidCheckScript}" ];
-    };
-  in {
-    login.fprintAuth = lib.mkForce true;
-    gdm-fingerprint.fprintAuth = true;
-
-    login.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
-      order = config.security.pam.services.login.rules.auth.fprintd.order - 1;
-    };
-    gdm-fingerprint.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
-      order = config.security.pam.services.gdm-fingerprint.rules.auth.fprintd.order - 1;
-    };
-    sudo.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
-      order = config.security.pam.services.sudo.rules.auth.fprintd.order - 1;
-    };
-    su.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
-      order = config.security.pam.services.su.rules.auth.fprintd.order - 1;
-    };
-    polkit-1.rules.auth.fprintd-only-if-lid-open = lidCheckRule // {
-      order = config.security.pam.services.polkit-1.rules.auth.fprintd.order - 1;
-    };
-  };
+  services.fprintd.enable = true;
 
   # TPM 2.0
   security.tpm2 = {
@@ -200,7 +166,7 @@
 
   # User
   users.users.gmglbn_0 = {
-    extraGroups = [ "libvirtd" "kvm" "video" "render" ];
+    extraGroups = [ "libvirtd" "kvm" "video" "render" "dialout" ];
     packages = with pkgs; [
       thunderbird
       qbittorrent-enhanced
@@ -238,11 +204,11 @@
       signal-desktop
       chromium
       slack
-      vlc 
+      vlc
       mpv
       modrinth-app
       eden
-      bottles
+      # bottles ## OpenLDAP is fucked up
     ];
   };
 
@@ -261,8 +227,8 @@
     openFirewall = true;
     package = pkgs.sunshine;
     settings = {
-      capture_method = "wayland"; 
-    };    
+      capture_method = "wayland";
+    };
   };
 
   # State version

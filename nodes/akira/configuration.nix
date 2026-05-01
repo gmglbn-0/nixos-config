@@ -30,7 +30,7 @@
   };
 
   # Time & Locale
-  time.timeZone = "UTC";
+  time.timeZone = "Asia/Yerevan";
   i18n.defaultLocale = "en_US.UTF-8";
 
   # Filesystem
@@ -55,6 +55,34 @@
       "3000:3000"
       "3001:3001"
     ];
+  };
+
+  # Potato Mesh
+  virtualisation.oci-containers.containers.potato-mesh-web = {
+    image = "ghcr.io/l5yth/potato-mesh-web-linux-amd64:latest";
+    ports = [ "41447:41447" ];
+    environment = {
+      API_TOKEN = "replace-with-a-secure-token";
+      SITE_NAME = "Akira Mesh";
+      INSTANCE_DOMAIN = "akira:41447";
+      MAP_CENTER = "40.1792,44.4991"; # Yerevan center
+    };
+    volumes = [
+      "/var/lib/potato-mesh/data:/app/.local/share/potato-mesh"
+      "/var/lib/potato-mesh/config:/app/.config/potato-mesh"
+      "/var/lib/potato-mesh/pages:/app/pages"
+    ];
+  };
+
+  virtualisation.oci-containers.containers.potato-mesh-ingestor = {
+    image = "ghcr.io/l5yth/potato-mesh-ingestor-linux-amd64:latest";
+    environment = {
+      API_TOKEN = "replace-with-a-secure-token";
+      INSTANCE_DOMAIN = "http://localhost:41447";
+      CONNECTION = "192.168.115.213:4403";
+      DEBUG = "1";
+    };
+    dependsOn = [ "potato-mesh-web" ];
   };
   
   # Samba
@@ -292,7 +320,7 @@
     htpasswd-file = "/media/restic/.htpasswd";
   };
 
-  networking.firewall.allowedTCPPorts = [ 445 3000 3001 8000 8081 8083 946 ];
+  networking.firewall.allowedTCPPorts = [ 445 3000 3001 8000 8081 8083 946 41447 ];
   networking.firewall.allowedUDPPorts = [ 5353 51820 ];  # mDNS, WireGuard
 
   # Windows 11 VM

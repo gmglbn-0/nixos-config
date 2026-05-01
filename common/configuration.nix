@@ -37,7 +37,7 @@
     plugins = [ "git" "sudo" "docker" "kubectl" ];
   };
   users.defaultUserShell = pkgs.zsh;
-  
+
   # User
   users.users.gmglbn_0 = {
     isNormalUser = true;
