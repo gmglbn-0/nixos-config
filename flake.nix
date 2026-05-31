@@ -30,25 +30,19 @@
     nix-cachyos-kernel = {
       url = "github:xddxdd/nix-cachyos-kernel/release";
     };
+
+    noctalia-shell = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs @ { self, nixpkgs, nixos-hardware, lanzaboote, nix-cachyos-kernel, ... }:
+  outputs = inputs @ { self, nixpkgs, nixos-hardware, lanzaboote, nix-cachyos-kernel, noctalia-shell, ... }:
     with builtins; let
       # Helper functions
       inherit (nixpkgs) lib;
 
-      gnomeCatppuccinOverlay = final: prev: {
-        gnome-catppuccin =
-          let
-            src = prev.fetchFromGitHub {
-              owner = "elisesouche";
-              repo = "gnome-catppuccin";
-              rev = "v1.0";
-              hash = "sha256-R/pIVO8I3d5cAhgGSHthOpjHEo1Oxbaepb30raxWRnc=";
-              fetchSubmodules = true;
-            };
-          in prev.callPackage "${src}" {};
-      };
+
 
       # Temporary fix: upstream 1password tarball hash changed (re-upload), nixpkgs hasn't caught up yet.
       # Remove this overlay once nixpkgs updates the hash for _1password 8.12.21.
@@ -98,7 +92,7 @@
 
             ({ lib, ... }: { networking.hostName = hostname; })
 
-            { nixpkgs.overlays = [ gnomeCatppuccinOverlay onepasswordHashFix tpm2PytssFix nix-cachyos-kernel.overlays.default ]; }
+            { nixpkgs.overlays = [ noctalia-shell.overlays.default onepasswordHashFix tpm2PytssFix nix-cachyos-kernel.overlays.default ]; }
           ] ++ modules;
         };
 

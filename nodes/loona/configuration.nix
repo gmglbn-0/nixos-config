@@ -47,15 +47,43 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Graphics
-  services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
+  # Niri compositor
+  programs.niri.enable = true;
+  programs.xwayland.enable = true;
+  services.xserver.videoDrivers = [ "amdgpu" ];
   services.xserver.xkb = {
-    layout = "us";
+    layout = "us,ru";
     variant = "";
   };
-  services.xserver.videoDrivers = [ "amdgpu" ];
+
+  # Login manager — greetd with regreet, hosted inside niri
+  programs.regreet.enable = true;
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.niri}/bin/niri -c ${pkgs.writeText "niri-greeter-config" ''
+          hotkey-overlay { skip-at-startup; }
+          environment {
+            GTK_USE_PORTAL "0"
+            GDK_DEBUG "no-portals"
+          }
+          spawn-at-startup "sh" "-c" "${pkgs.regreet}/bin/regreet; pkill -f niri"
+        ''}";
+        user = "greeter";
+      };
+    };
+  };
+
+  # XDG portals for Wayland (screen sharing, file dialogs, etc.)
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gnome pkgs.xdg-desktop-portal-gtk ];
+  };
+
+  # Bluetooth
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
 
   # Hardware acceleration
   hardware.graphics = {
@@ -175,11 +203,19 @@
       zed-editor
       wakatime-cli
       parsec-bin
-      gnomeExtensions.appindicator
-      gnomeExtensions.user-themes
-      gnome-catppuccin
+      # Niri companion tools
+      alacritty
+      fuzzel
+      awww
+      brightnessctl
+      playerctl
+      wl-clipboard
+      grim
+      slurp
+      networkmanagerapplet
+      noctalia-shell
+      # Desktop apps
       obs-studio
-      ptyxis
       dnsmasq
       libmbim
       libqmi
@@ -218,6 +254,14 @@
     hyfetch
     modemmanager
   ];
+
+  # Deploy Niri config to user home
+  system.activationScripts.niri-config = ''
+    mkdir -p /home/gmglbn_0/.config/niri
+    cp ${./niri-config.kdl} /home/gmglbn_0/.config/niri/config.kdl
+    chown gmglbn_0:users /home/gmglbn_0/.config/niri/config.kdl
+    chmod 644 /home/gmglbn_0/.config/niri/config.kdl
+  '';
 
   # State version
   system.stateVersion = "25.11";
