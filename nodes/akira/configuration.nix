@@ -12,7 +12,7 @@
   # Networking
   networking.networkmanager.enable = true;
   networking.firewall.enable = true;
-
+  
   # WireGuard
   networking.wireguard.interfaces.wg0 = {
     ips = [ "10.0.0.2/24" ];
@@ -40,7 +40,7 @@
     options = [ "defaults" "nofail" ];
   };
 
-  # Docker 
+  # Docker
   virtualisation.docker = {
     enable = true;
     daemon.settings = {
@@ -84,7 +84,7 @@
     };
     dependsOn = [ "potato-mesh-web" ];
   };
-  
+
   # Samba
   services.samba = {
     enable = true;
@@ -95,13 +95,13 @@
         "server string" = "akira";
         "security" = "user";
         "map to guest" = "bad user";
-        "hosts allow" = "192.168.106. 127.0.0.1 100."; 
+        "hosts allow" = "192.168.106. 127.0.0.1 100.";
 
         "server min protocol" = "SMB3_00";
         "client min protocol" = "SMB3_00";
         "log file" = "/var/log/samba/%m.log";
         "max log size" = "50";
-        
+
         "socket options" = "TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=131072 SO_SNDBUF=131072";
         "read raw" = "yes";
         "write raw" = "yes";

@@ -15,8 +15,11 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    helium = {
+      url = "github:AlvaroParker/helium-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     lanzaboote = {
@@ -47,6 +50,38 @@
           in prev.callPackage "${src}" {};
       };
 
+      # Temporary fix: upstream 1password tarball hash changed (re-upload), nixpkgs hasn't caught up yet.
+      # Remove this overlay once nixpkgs updates the hash for _1password 8.12.21.
+      onepasswordHashFix = final: prev: {
+        _1password-gui = prev._1password-gui.overrideAttrs (old: {
+          src = prev.fetchurl {
+            url = "https://downloads.1password.com/linux/tar/stable/x64/1password-8.12.21.x64.tar.gz";
+            hash = "sha256-JwiMi2iozP6jWSIUtgXla86aSAhuUob7snqtUbeXPpI=";
+          };
+        });
+        _1password = prev._1password.overrideAttrs (old: {
+          src = prev.fetchurl {
+            url = "https://downloads.1password.com/linux/tar/stable/x64/1password-8.12.21.x64.tar.gz";
+            hash = "sha256-JwiMi2iozP6jWSIUtgXla86aSAhuUob7snqtUbeXPpI=";
+          };
+        });
+      };
+
+      # Temporary fix: tpm2-pytss 2.3.0 tests fail with Python 3.13 (abstract class TypeError).
+      # Remove this overlay once nixpkgs fixes tpm2-pytss compatibility.
+      tpm2PytssFix = final: prev: {
+        python3Packages = prev.python3Packages // {
+          tpm2-pytss = prev.python3Packages.tpm2-pytss.overrideAttrs (old: {
+            doCheck = false;
+          });
+        };
+        python313Packages = prev.python313Packages // {
+          tpm2-pytss = prev.python313Packages.tpm2-pytss.overrideAttrs (old: {
+            doCheck = false;
+          });
+        };
+      };
+
       buildSystem = hostname: system: modules:
         nixpkgs.lib.nixosSystem {
           inherit system;
@@ -63,7 +98,7 @@
 
             ({ lib, ... }: { networking.hostName = hostname; })
 
-            { nixpkgs.overlays = [ gnomeCatppuccinOverlay nix-cachyos-kernel.overlays.default ]; }
+            { nixpkgs.overlays = [ gnomeCatppuccinOverlay onepasswordHashFix tpm2PytssFix nix-cachyos-kernel.overlays.default ]; }
           ] ++ modules;
         };
 

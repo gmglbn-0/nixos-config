@@ -121,8 +121,8 @@
   # TPM 2.0
   security.tpm2 = {
     enable = true;
-    pkcs11.enable = true;
-    tctiEnvironment.enable = true;
+    pkcs11.enable = false; # Temporarily disabled: tpm2-pytss 2.3.0 tests fail with Python 3.13 in nixpkgs-unstable
+    # tctiEnvironment.enable = true;
   };
 
   # Virtualization
@@ -199,7 +199,6 @@
       fontconfig
       antigravity
       nheko
-      deltachat-desktop
       lm_sensors
       signal-desktop
       chromium
@@ -207,7 +206,7 @@
       vlc
       mpv
       modrinth-app
-      eden
+      spotify
       # bottles ## OpenLDAP is fucked up
     ];
   };
@@ -219,17 +218,6 @@
     hyfetch
     modemmanager
   ];
-
-  services.sunshine = {
-    enable = true;
-    autoStart = true;
-    capSysAdmin = true;
-    openFirewall = true;
-    package = pkgs.sunshine;
-    settings = {
-      capture_method = "wayland";
-    };
-  };
 
   # State version
   system.stateVersion = "25.11";
