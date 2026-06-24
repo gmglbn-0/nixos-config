@@ -6,9 +6,6 @@
     inputs.apple-silicon.nixosModules.apple-silicon-support
   ];
 
-  # ── Hardware acceleration ────────────────────────────────────────────────
-  hardware.asahi.useExperimentalGPUDriver = true;
-
   # ── Boot ─────────────────────────────────────────────────────────────────
   # Apple Silicon uses an EFI stub via m1n1 + U-Boot; systemd-boot works fine
   boot.loader.systemd-boot.enable = true;
