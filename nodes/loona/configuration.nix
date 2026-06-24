@@ -101,16 +101,19 @@
     ];
   };
 
-  # Power and Thermal Management
+  # Power 
   services.thermald.enable = true;
-  services.power-profiles-daemon.enable = true;
-  services.upower = {
+
+  services.tlp = {
     enable = true;
-    percentageLow = 10;
-    percentageCritical = 5;
-    percentageAction = 3;
-    criticalPowerAction = "Hibernate";
+    settings = {
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance";
+      NVME_PCIE_ASPM_ON_BAT = "powersave";
+    };
   };
+  services.power-profiles-daemon.enable = false;
+  services.upower.enable = true;
   hardware.amdgpu.opencl.enable = true;
 
   # Audio
@@ -122,7 +125,6 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    # AirPlay support for music streaming
     extraConfig.pipewire."99-airplay" = {
       "context.modules" = [
         {
@@ -149,8 +151,7 @@
   # TPM 2.0
   security.tpm2 = {
     enable = true;
-    pkcs11.enable = false; # Temporarily disabled: tpm2-pytss 2.3.0 tests fail with Python 3.13 in nixpkgs-unstable
-    # tctiEnvironment.enable = true;
+    pkcs11.enable = true;
   };
 
   # Virtualization
@@ -176,7 +177,7 @@
   programs.zsh.enable = true;
   programs.zsh.ohMyZsh = {
     enable = true;
-    plugins = [ "git" "sudo" "kubectl" ];
+    plugins = [ "git" "sudo" ];
   };
   users.defaultUserShell = pkgs.zsh;
 
@@ -190,7 +191,7 @@
 
   # Unfree and insecure
   nixpkgs.config.permittedInsecurePackages = [ "olm-3.2.16" ];
-  nixpkgs.config.permittedUnfreePackages = [ "antigravity" "libfprint-2-tod1-goodix" ];
+  nixpkgs.config.permittedUnfreePackages = [ "antigravity" ];
 
   # User
   users.users.gmglbn_0 = {
@@ -201,58 +202,50 @@
       krita
       ayugram-desktop
       zed-editor
-      wakatime-cli
       parsec-bin
-      # Niri companion tools
+      xwayland-satellite
       alacritty
       fuzzel
-      awww
       brightnessctl
       playerctl
       wl-clipboard
+      wtype
+      cliphist
       grim
       slurp
       networkmanagerapplet
       noctalia-shell
-      # Desktop apps
+      nautilus
       obs-studio
       dnsmasq
       libmbim
       libqmi
       pciutils
       usbutils
-      modem-manager-gui
       chatty
-      rustc
-      cargo
-      rustfmt
-      clippy
-      rust-analyzer
-      rustup
       pkg-config
-      gcc
       freetype
       fontconfig
       antigravity
       nheko
-      lm_sensors
       signal-desktop
       chromium
       slack
-      vlc
       mpv
       modrinth-app
       spotify
-      # bottles ## OpenLDAP is fucked up
+      file-roller
+      p7zip
+      unrar
     ];
   };
 
   # Additional system packages
   environment.systemPackages = with pkgs; [
-    sbctl
     fastfetch
     hyfetch
     modemmanager
+    e2fsprogs
   ];
 
   # Deploy Niri config to user home
