@@ -56,7 +56,7 @@
         "strict locking" = "no";
         "strict sync" = "no";
 
-        # Apple / Time Machine support
+        # Time Machine feat
         "vfs objects" = "catia fruit streams_xattr";
         "fruit:aapl" = "yes";
         "fruit:nfs_aces" = "no";
@@ -89,7 +89,7 @@
     };
   };
 
-  # Avahi (mDNS for Time Machine discovery)
+  # Avahi 
   services.avahi = {
     enable = true;
     nssmdns4 = true;
@@ -167,9 +167,6 @@
       Restart = "on-failure";
     };
   };
-
-  # Hardware OpenGL (Mesa) for VM 3D Acceleration
-  hardware.graphics.enable = true;
 
   # Tailscale
   services.tailscale.enable = true;
