@@ -36,10 +36,65 @@
   # ── Hardware acceleration ────────────────────────────────────────────────
   hardware.graphics.enable = true;
 
+  # ── Apple Silicon firmware ───────────────────────────────────────────────
+  # Peripheral firmware is committed to the repo at nodes/rei/firmware/
+  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
+
   # ── Power management ─────────────────────────────────────────────────────
   # M1 has its own power management; just let the kernel handle it
   powerManagement.enable = true;
 
+  # Disable sleep on lid close so it can operate as a closed headless server
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchDocked = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+  };
+
+  # Turn off internal screen brightness on startup
+  systemd.services.turn-off-backlight = {
+    description = "Turn off internal screen backlight on startup";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-backlight@backlight:apple-panel-bl.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'if [ -f /sys/class/backlight/apple-panel-bl/brightness ]; then echo 0 > /sys/class/backlight/apple-panel-bl/brightness; fi'";
+      RemainAfterExit = true;
+    };
+  };
+
+  # ── Docker ───────────────────────────────────────────────────────────────
+  virtualisation.docker = {
+    enable = true;
+    daemon.settings = {
+      data-root = "/data/docker";
+    };
+  };
+
+  # ── kaas-bot ─────────────────────────────────────────────────────────────
+  virtualisation.oci-containers.containers.kaas-bot = {
+    image = "kaas-bot";
+    ports = [ "3005:3000" ];
+    volumes = [ "/data/kaas-bot/data:/app/data" ];
+    environmentFiles = [ "/data/kaas-bot/.env" ];
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /data 0755 root root -"
+    "d /data/kaas-bot 0755 gmglbn_0 users -"
+    "d /data/kaas-bot/data 0755 gmglbn_0 users -"
+  ];
+
+  # OpenSpeedTest
+
+  virtualisation.oci-containers.containers.openspeedtest = {
+    image = "openspeedtest/latest";
+    ports = [
+      "3000:3000"
+      "3001:3001"
+    ];
+  };
+  
   # ── Tailscale ────────────────────────────────────────────────────────────
   services.tailscale.enable = true;
 
@@ -60,15 +115,28 @@
     plugins = [ "git" "sudo" ];
   };
   users.defaultUserShell = pkgs.zsh;
+  environment.systemPackages = [ 
+    pkgs.hdparm 
+    pkgs.lm_sensors 
+    pkgs.smartmontools 
+    pkgs.hddtemp 
+    ];
 
   # ── User ─────────────────────────────────────────────────────────────────
   users.users.gmglbn_0 = {
+    extraGroups = [ "docker" ];
     packages = with pkgs; [
       alacritty
       fastfetch
       htop
     ];
   };
+
+  networking.firewall.allowedTCPPorts = [ 3005 ];
+
+  # ── Sudo ─────────────────────────────────────────────────────────────────
+  # Headless server — passwordless sudo so nixos-rebuild --sudo works remotely
+  security.sudo.wheelNeedsPassword = false;
 
   # ── Nix ──────────────────────────────────────────────────────────────────
   nix.settings.trusted-users = [ "root" "gmglbn_0" ];

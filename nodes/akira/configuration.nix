@@ -13,22 +13,6 @@
   networking.networkmanager.enable = true;
   networking.firewall.enable = true;
 
-  # WireGuard
-  networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.0.0.2/24" ];
-    listenPort = 51820;
-    privateKeyFile = "/etc/wireguard/private.key";
-    peers = [
-      {
-        # brianna
-        publicKey = "YYiMSeoOKFsI/jtNtJnp3frmV0xx7bhRyO2DARI8NQ8=";
-        endpoint = "91.132.132.199:51820";
-        allowedIPs = [ "10.0.0.0/24" ];
-        persistentKeepalive = 25;
-      }
-    ];
-  };
-
   # Time & Locale
   time.timeZone = "Asia/Yerevan";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -38,51 +22,6 @@
     device = "/dev/disk/by-label/RAID0";
     fsType = "btrfs";
     options = [ "defaults" "nofail" ];
-  };
-
-  # Docker
-  virtualisation.docker = {
-    enable = true;
-    daemon.settings = {
-      data-root = "/data/docker";
-    };
-  };
-
-  # OpenSpeedTest
-  virtualisation.oci-containers.containers.openspeedtest = {
-    image = "openspeedtest/latest";
-    ports = [
-      "3000:3000"
-      "3001:3001"
-    ];
-  };
-
-  # Potato Mesh
-  virtualisation.oci-containers.containers.potato-mesh-web = {
-    image = "ghcr.io/l5yth/potato-mesh-web-linux-amd64:latest";
-    ports = [ "41447:41447" ];
-    environment = {
-      API_TOKEN = "replace-with-a-secure-token";
-      SITE_NAME = "Akira Mesh";
-      INSTANCE_DOMAIN = "akira:41447";
-      MAP_CENTER = "40.1792,44.4991"; # Yerevan center
-    };
-    volumes = [
-      "/var/lib/potato-mesh/data:/app/.local/share/potato-mesh"
-      "/var/lib/potato-mesh/config:/app/.config/potato-mesh"
-      "/var/lib/potato-mesh/pages:/app/pages"
-    ];
-  };
-
-  virtualisation.oci-containers.containers.potato-mesh-ingestor = {
-    image = "ghcr.io/l5yth/potato-mesh-ingestor-linux-amd64:latest";
-    environment = {
-      API_TOKEN = "replace-with-a-secure-token";
-      INSTANCE_DOMAIN = "http://localhost:41447";
-      CONNECTION = "192.168.115.213:4403";
-      DEBUG = "1";
-    };
-    dependsOn = [ "potato-mesh-web" ];
   };
 
   # Samba
@@ -229,65 +168,6 @@
     };
   };
 
-  # UPS
-  power.ups = {
-    enable = true;
-    mode = "netclient";
-    upsmon = {
-      enable = true;
-      monitor."ups@192.168.106.2" = {
-        powerValue = 1;
-        user = "akira";
-        passwordFile = "/etc/nixos/secrets/ups-password";
-        type = "slave";
-      };
-      settings = {
-        SHUTDOWNCMD = "sudo /run/current-system/sw/bin/systemctl hibernate";
-        FINALDELAY = 5;
-      };
-    };
-  };
-
-  # Passwordless hibernate
-  security.sudo.extraRules = [
-    {
-      users = [ "nutmon" ];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/systemctl hibernate";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
-
-  # eco-friendly!
-  powerManagement.enable = true;
-  powerManagement.powertop.enable = true;
-  powerManagement.cpuFreqGovernor = "powersave";
-
-  environment.systemPackages = [ pkgs.hdparm pkgs.lm_sensors pkgs.smartmontools pkgs.hddtemp ];
-
-  systemd.services.hdparm-spindown = {
-    description = "hdparm-spindown service";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "local-fs.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "hdparm-spindown" ''
-        for dev in /dev/sd?; do
-          [ -b "$dev" ] && ${pkgs.hdparm}/bin/hdparm -S 180 "$dev"
-        done
-      '';
-    };
-  };
-
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="block", KERNEL=="sd[a-z]", \
-      RUN+="${pkgs.hdparm}/bin/hdparm -S 180 /dev/%k"
-  '';
-
   # Hardware OpenGL (Mesa) for VM 3D Acceleration
   hardware.graphics.enable = true;
 
@@ -307,13 +187,10 @@
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB8hdK1kb0EHpDzC5WTLkQ4kS5GFt8IBZRjjgNx7SKj8"
   ];
 
-  # User (extends common)
-  users.users.gmglbn_0.extraGroups = [ "docker" ];
-
   users.users.dipierro = {
     isNormalUser = true;
     description = "Avgustina DiPierro";
-    extraGroups = [ "wheel" "docker" ];
+    extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJprtCdLq8X4sYWZp3loq69iED8h1YEvfe2j3vUEIsVy"
     ];
@@ -329,8 +206,8 @@
     htpasswd-file = "/media/restic/.htpasswd";
   };
 
-  networking.firewall.allowedTCPPorts = [ 445 3000 3001 3005 8000 8081 8083 946 41447 ];
-  networking.firewall.allowedUDPPorts = [ 5353 51820 ];  # mDNS, WireGuard
+  networking.firewall.allowedTCPPorts = [ 445 8000 8081 8083 ];
+  networking.firewall.allowedUDPPorts = [ 5353 ];  # mDNS
 
   # Create Time Machine directories on /media
   systemd.tmpfiles.rules = [

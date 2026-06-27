@@ -9,51 +9,69 @@
   ];
 
   # Secure Boot
-  boot.loader.systemd-boot.enable = lib.mkForce false;
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/var/lib/sbctl";
+  boot = {
+    loader = {
+      systemd-boot.enable = lib.mkForce false;
+      efi.canTouchEfiVariables = true;
+    };
+    lanzaboote = {
+      enable = true;
+      pkiBundle = "/var/lib/sbctl";
+    };
+    kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
+    initrd = {
+      kernelModules = [ "amdgpu" "i915" ];
+      systemd.enable = true;
+    };
+    kernelParams = [
+      "modprobe.blacklist=spi-nor"
+      "modprobe.blacklist=kvm_amd"
+      "i2c-i801.disable_features=0x10"
+    ];
+    extraModprobeConfig = ''
+      options thinkpad_acpi fan_control=1
+    '';
   };
 
-  # Boot
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
-  boot.initrd.kernelModules = [ "amdgpu" "i915" ];
-  boot.initrd.systemd.enable = true;
-  boot.kernelParams = [ "modprobe.blacklist=spi-nor" "modprobe.blacklist=kvm_amd" "i2c-i801.disable_features=0x10" ];
-
   # Networking
-  networking.networkmanager.enable = true;
-  networking.firewall.enable = false;
-
-  # ModemManager
-  networking.modemmanager.enable = true;
+  networking = {
+    networkmanager.enable = true;
+    firewall.enable = false;
+    modemmanager.enable = true;
+  };
 
   # Quectel modem fix
   services.quectel-modem-fix.enable = true;
 
   # Time & Locale
   time.timeZone = "Asia/Yerevan";
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LC_ADDRESS = "en_US.UTF-8";
+      LC_IDENTIFICATION = "en_US.UTF-8";
+      LC_MEASUREMENT = "en_US.UTF-8";
+      LC_MONETARY = "en_US.UTF-8";
+      LC_NAME = "en_US.UTF-8";
+      LC_NUMERIC = "en_US.UTF-8";
+      LC_PAPER = "en_US.UTF-8";
+      LC_TELEPHONE = "en_US.UTF-8";
+      LC_TIME = "en_US.UTF-8";
+    };
   };
 
   # Niri compositor
-  programs.niri.enable = true;
-  programs.xwayland.enable = true;
-  services.xserver.videoDrivers = [ "amdgpu" ];
-  services.xserver.xkb = {
-    layout = "us,ru";
-    variant = "";
+  programs = {
+    niri.enable = true;
+    xwayland.enable = true;
+  };
+
+  services.xserver = {
+    videoDrivers = [ "amdgpu" ];
+    xkb = {
+      layout = "us,ru";
+      variant = "";
+    };
   };
 
   # Login manager — greetd with regreet, hosted inside niri
@@ -75,15 +93,20 @@
     };
   };
 
-  # XDG portals for Wayland (screen sharing, file dialogs, etc.)
+  # XDG portals for Wayland
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gnome pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gnome
+      pkgs.xdg-desktop-portal-gtk
+    ];
   };
 
   # Bluetooth
-  hardware.bluetooth.enable = true;
-  hardware.bluetooth.powerOnBoot = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
 
   # Hardware acceleration
   hardware.graphics = {
@@ -101,46 +124,51 @@
     ];
   };
 
-  # Power 
+  # Power & Thermals — keep it cool and quiet
   services.thermald.enable = true;
 
-  services.tlp = {
+  services.thinkfan = {
+    enable = true;
+    levels = [
+      [ 0     0  55 ]
+      [ 1    48  60 ]
+      [ 2    55  65 ]
+      [ 3    60  70 ]
+      [ 6    65  75 ]
+      [ 7    70  80 ]
+      [ "level auto" 75 32767 ]
+    ];
+  };
+
+  services.auto-cpufreq = {
     enable = true;
     settings = {
-      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
-      CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance";
-      NVME_PCIE_ASPM_ON_BAT = "powersave";
+      battery = {
+        governor = "powersave";
+        turbo = "never";
+      };
+      charger = {
+        governor = "powersave";
+        turbo = "auto";
+      };
     };
   };
+
   services.power-profiles-daemon.enable = false;
-  services.upower.enable = true;
-  hardware.amdgpu.opencl.enable = true;
+  powerManagement.powertop.enable = true;
 
   # Audio
-  services.printing.enable = true;
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    extraConfig.pipewire."99-airplay" = {
-      "context.modules" = [
-        {
-          name = "libpipewire-module-raop-discover";
-          args = { };
-        }
-      ];
+  services = {
+    printing.enable = true;
+    pulseaudio.enable = false;
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;   
     };
   };
-
-  # Avahi
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
+  security.rtkit.enable = true;
 
   # Thunderbolt
   services.hardware.bolt.enable = true;
@@ -154,12 +182,6 @@
     pkcs11.enable = true;
   };
 
-  # Virtualization
-  virtualisation.libvirtd.enable = true;
-  virtualisation.spiceUSBRedirection.enable = true;
-  virtualisation.virtualbox.host.enable = true;
-  users.extraGroups.vboxusers.members = [ "gmglbn_0" ];
-
   # iOS
   services.usbmuxd.enable = true;
 
@@ -167,19 +189,20 @@
   services.tailscale.enable = true;
 
   # Programs
-  programs.steam.enable = true;
-  programs._1password.enable = true;
-  programs._1password-gui = {
-    enable = true;
-    polkitPolicyOwners = [ "gmglbn_0" ];
+  programs = {
+    steam.enable = true;
+    _1password.enable = true;
+    _1password-gui = {
+      enable = true;
+      polkitPolicyOwners = [ "gmglbn_0" ];
+    };
+    firefox.enable = true;
+    zsh.enable = true;
+    zsh.ohMyZsh = {
+      enable = true;
+      plugins = [ "git" "sudo" ];
+    };
   };
-  programs.firefox.enable = true;
-  programs.zsh.enable = true;
-  programs.zsh.ohMyZsh = {
-    enable = true;
-    plugins = [ "git" "sudo" ];
-  };
-  users.defaultUserShell = pkgs.zsh;
 
   # nix-ld
   programs.nix-ld.enable = true;
@@ -194,50 +217,53 @@
   nixpkgs.config.permittedUnfreePackages = [ "antigravity" ];
 
   # User
-  users.users.gmglbn_0 = {
-    extraGroups = [ "libvirtd" "kvm" "video" "render" "dialout" ];
-    packages = with pkgs; [
-      thunderbird
-      qbittorrent-enhanced
-      krita
-      ayugram-desktop
-      zed-editor
-      parsec-bin
-      xwayland-satellite
-      alacritty
-      fuzzel
-      brightnessctl
-      playerctl
-      wl-clipboard
-      wtype
-      cliphist
-      grim
-      slurp
-      networkmanagerapplet
-      noctalia-shell
-      nautilus
-      obs-studio
-      dnsmasq
-      libmbim
-      libqmi
-      pciutils
-      usbutils
-      chatty
-      pkg-config
-      freetype
-      fontconfig
-      antigravity
-      nheko
-      signal-desktop
-      chromium
-      slack
-      mpv
-      modrinth-app
-      spotify
-      file-roller
-      p7zip
-      unrar
-    ];
+  users = {
+    defaultUserShell = pkgs.zsh;
+    users.gmglbn_0 = {
+      extraGroups = [ "libvirtd" "kvm" "video" "render" "dialout" ];
+      packages = with pkgs; [
+        thunderbird
+        qbittorrent-enhanced
+        krita
+        ayugram-desktop
+        zed-editor
+        parsec-bin
+        xwayland-satellite
+        alacritty
+        fuzzel
+        brightnessctl
+        playerctl
+        wl-clipboard
+        wtype
+        cliphist
+        grim
+        slurp
+        networkmanagerapplet
+        noctalia-shell
+        nautilus
+        obs-studio
+        dnsmasq
+        libmbim
+        libqmi
+        pciutils
+        usbutils
+        chatty
+        pkg-config
+        freetype
+        fontconfig
+        antigravity
+        nheko
+        signal-desktop
+        chromium
+        slack
+        mpv
+        modrinth-app
+        spotify
+        file-roller
+        p7zip
+        unrar
+      ];
+    };
   };
 
   # Additional system packages
