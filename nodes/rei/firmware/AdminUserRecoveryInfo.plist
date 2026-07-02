@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>gmglbn_0</key>
+	<dict>
+		<key>AuthenticationAuthority</key>
+		<array>
+			<string>;ShadowHash;HASHLIST:&lt;SALTED-SHA512-PBKDF2,SRP-RFC5054-4096-SHA512-PBKDF2&gt;</string>
+			<string>;SecureToken;</string>
+			<string>;Kerberosv5;;gmglbn_0@LKDC:SHA1.AD4AF5097F0AA4A1BA59C77DD27DBF905136C952;LKDC:SHA1.AD4AF5097F0AA4A1BA59C77DD27DBF905136C952;</string>
+		</array>
+		<key>GeneratedUID</key>
+		<string>5F3FBAE7-87BE-42D5-98A1-D6101100106F</string>
+		<key>RealName</key>
+		<string>kita</string>
+	</dict>
+</dict>
+</plist>
