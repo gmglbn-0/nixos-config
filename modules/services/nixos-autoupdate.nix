@@ -12,7 +12,7 @@ let
 
   script = pkgs.writeShellApplication {
     name = "nixos-autoupdate";
-    runtimeInputs = with pkgs; [ git nix nixos-rebuild curl jq coreutils gnugrep ];
+    runtimeInputs = with pkgs; [ git nix nixos-rebuild curl jq coreutils gnugrep openssh ];
     text = ''
       set -euo pipefail
 
@@ -209,7 +209,7 @@ let
               nixos-rebuild switch \
                 --flake "${cfg.flakeDir}#$node" \
                 --target-host "$host" \
-                --use-remote-sudo 2>&1 \
+                --sudo 2>&1 \
                 | tee "/tmp/nixos-autoupdate-switch-$node.log"
               sw_exit=$?
             fi
