@@ -12,7 +12,7 @@ let
 
   script = pkgs.writeShellApplication {
     name = "nixos-autoupdate";
-    runtimeInputs = with pkgs; [ git nix curl jq coreutils gnugrep ];
+    runtimeInputs = with pkgs; [ git nix nixos-rebuild curl jq coreutils gnugrep ];
     text = ''
       set -euo pipefail
 
