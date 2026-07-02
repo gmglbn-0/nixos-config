@@ -160,8 +160,14 @@ let
         done
         "$all_done" && break
 
-        # Fetch updates
-        updates=$(curl -sf "$API/getUpdates?offset=$(( LAST_UPDATE_ID + 1 ))&timeout=10&allowed_updates=[\"callback_query\"]" || echo '{"result":[]}')
+        # Fetch updates (POST with JSON body so allowed_updates is properly serialised)
+        updates=$(curl -sf -X POST "$API/getUpdates" \
+          -H "Content-Type: application/json" \
+          -d "$(jq -n \
+            --argjson offset "$(( LAST_UPDATE_ID + 1 ))" \
+            --argjson timeout 30 \
+            '{offset: $offset, timeout: $timeout, allowed_updates: ["callback_query"]}')" \
+          || echo '{"result":[]}')
 
         while IFS= read -r update; do
           update_id=$(echo "$update" | jq -r '.update_id // empty')
@@ -225,7 +231,7 @@ let
 
         done < <(echo "$updates" | jq -c '.result[]? // empty')
 
-        sleep 10
+
       done
 
       # Notify about any nodes left unresolved at deadline
