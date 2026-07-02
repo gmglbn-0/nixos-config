@@ -5,6 +5,7 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  boot.kernelPackages = lib.mkDefault pkgs.cachyosKernels.linuxPackages-cachyos-lts;
   environment.systemPackages = with pkgs; [
     vim
     wget

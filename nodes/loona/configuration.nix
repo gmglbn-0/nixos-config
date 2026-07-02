@@ -18,7 +18,6 @@
       enable = true;
       pkiBundle = "/var/lib/sbctl";
     };
-    kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
     initrd = {
       kernelModules = [ "amdgpu" "i915" ];
       systemd.enable = true;
