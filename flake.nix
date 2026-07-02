@@ -93,6 +93,8 @@
           modules = [
             ./common/configuration.nix
 
+            ./modules/default.nix
+
             ./nodes/${hostname}/configuration.nix
 
             ./nodes/${hostname}/hardware-configuration.nix

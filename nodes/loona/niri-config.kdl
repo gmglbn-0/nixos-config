@@ -1,4 +1,4 @@
-// Niri configuration for loona (ThinkPad X13 Yoga)
+// Niri configuration for loona
 // Catppuccin Mocha color scheme
 
 // ── Startup ─────────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ environment {
 input {
     keyboard {
         xkb {
-            layout "us,ru,am"
+            layout "us,ru"
         }
         numlock
     }
@@ -79,20 +79,19 @@ input {
     focus-follows-mouse max-scroll-amount="0%"
 }
 
-// ── Output ──────────────────────────────────────────────────────────
 // Internal panel: WUXGA, no scaling — ever
 output "eDP-1" {
     mode "1920x1200@60"
     scale 1.0
-    position x=0 y=0
+    position x=3072 y=0
 }
 
-// ── Named Workspaces ────────────────────────────────────────────────
-workspace "main"
-workspace "web"
-workspace "chat"
-workspace "code"
-workspace "media"
+// External UltraFine monitor
+output "LG Electronics LG ULTRAFINE 205NTMX95867" {
+    mode "3840x2160@60"
+    scale 1.25
+    position x=0 y=0
+}
 
 // ── Layout ──────────────────────────────────────────────────────────
 layout {
@@ -103,7 +102,7 @@ layout {
     preset-column-widths {
         proportion 0.33333
         proportion 0.5
-        proportion 0.66667
+        proportion 0.66666
     }
 
     default-column-width { proportion 0.5; }
@@ -155,33 +154,6 @@ animations {}
 switch-events {
     // Lock screen when laptop lid is closed (Noctalia handles the lock UI)
     lid-close { spawn "niri" "msg" "action" "power-off-monitors"; }
-}
-
-// ── Window Rules ────────────────────────────────────────────────────
-
-// Global: rounded corners for all windows
-window-rule {
-    geometry-corner-radius 8 8 8 8
-    clip-to-geometry true
-}
-
-// 1Password — floating, block from screen capture
-window-rule {
-    match app-id="1Password"
-    open-floating true
-    block-out-from "screen-capture"
-}
-
-// Firefox picture-in-picture — floating
-window-rule {
-    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
-    open-floating true
-}
-
-// Ayugram — open on chat workspace
-window-rule {
-    match app-id="io.github.AyuGram.AyuGramDesktop"
-    open-on-workspace "chat"
 }
 
 // ── Keybindings ─────────────────────────────────────────────────────

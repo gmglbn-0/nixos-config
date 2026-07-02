@@ -74,6 +74,8 @@
     };
   };
 
+  services.upower.enable = true;
+
   # Login manager — greetd with regreet, hosted inside niri
   programs.regreet.enable = true;
   services.greetd = {
@@ -130,13 +132,13 @@
   services.thinkfan = {
     enable = true;
     levels = [
-      [ 0     0  55 ]
-      [ 1    48  60 ]
-      [ 2    55  65 ]
-      [ 3    60  70 ]
-      [ 6    65  75 ]
-      [ 7    70  80 ]
-      [ "level auto" 75 32767 ]
+      [ 0     0  70 ]
+      [ 1    65  75 ]
+      [ 2    70  80 ]
+      [ 3    75  85 ]
+      [ 6    80  90 ]
+      [ 7    85  95 ]
+      [ "level auto" 90  32767 ]
     ];
   };
 
