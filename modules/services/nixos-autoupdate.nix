@@ -85,7 +85,6 @@ let
       done
 
       # ── Stage 3: Compute diffs & send Telegram messages ───────────────────
-      declare -A MSG_IDS=()
 
       for node in "''${NODES[@]}"; do
         if [ "''${BUILD_LOGS[$node]:-}" = "FAILED" ]; then
@@ -119,7 +118,8 @@ let
             {text: "❌ Skip",   callback_data: ("skip_"   + $node)}
           ]]}')
 
-        msg_response=$(curl -sf -X POST "$API/sendMessage" \
+        # Send query message
+        curl -sf -X POST "$API/sendMessage" \
           -H "Content-Type: application/json" \
           -d "$(jq -n \
             --arg chat_id  "$CHAT_ID" \
@@ -131,10 +131,7 @@ let
               parse_mode: "HTML",
               text: ("🔄 <b>nixos-autoupdate — " + $node + "</b>\n\nPackage changes:\n<pre>" + $diff + "</pre>\n\nSwitch this node to the new configuration?"),
               reply_markup: $kb
-            }')")
-
-        msg_id=$(echo "$msg_response" | jq -r '.result.message_id // empty')
-        [ -n "$msg_id" ] && MSG_IDS["$node"]="$msg_id"
+            }')" > /dev/null
       done
 
       # ── Stage 4: Poll for responses until next calendar event ─────────────
