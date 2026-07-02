@@ -8,6 +8,7 @@
   # Boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages_6_18;
 
   # Kernel patches for Mi Pad 2 - REQUIRED for boot and audio
   boot.kernelPatches = [
