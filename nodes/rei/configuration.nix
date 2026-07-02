@@ -44,6 +44,11 @@
   # M1 has its own power management; just let the kernel handle it
   powerManagement.enable = true;
 
+  # Battery charge threshold to extend battery lifespan (60% limit)
+  services.udev.extraRules = ''
+    SUBSYSTEM=="power_supply", KERNEL=="macsmc-battery", ATTR{charge_control_end_threshold}="60"
+  '';
+
   # Disable sleep on lid close so it can operate as a closed headless server
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
@@ -94,7 +99,7 @@
       "3001:3001"
     ];
   };
-  
+
   # ── Tailscale ────────────────────────────────────────────────────────────
   services.tailscale.enable = true;
 
@@ -115,12 +120,12 @@
     plugins = [ "git" "sudo" ];
   };
   users.defaultUserShell = pkgs.zsh;
-  environment.systemPackages = [ 
-    pkgs.hdparm 
-    pkgs.lm_sensors 
-    pkgs.smartmontools 
-    pkgs.hddtemp 
-    ];
+  environment.systemPackages = [
+    pkgs.hdparm
+    pkgs.lm_sensors
+    pkgs.smartmontools
+    pkgs.hddtemp
+  ];
 
   # ── User ─────────────────────────────────────────────────────────────────
   users.users.gmglbn_0 = {
@@ -146,12 +151,12 @@
   # binfmt emulation), then asks via Telegram whether to switch each node.
   # Credentials: /etc/nixos-updater/telegram.env  (BOT_TOKEN=… CHAT_ID=…)
   services.nixos-autoupdate = {
-    enable    = true;
-    selfNode  = "rei";
-    flakeDir  = "/home/gmglbn_0/git/nixos-config";
+    enable = true;
+    selfNode = "rei";
+    flakeDir = "/home/gmglbn_0/git/nixos-config";
     telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
     nodes = [
-      { name = "rei";   host = "localhost";  }
+      { name = "rei"; host = "localhost"; }
       { name = "loona"; host = "loona"; }
       { name = "akira"; host = "akira"; }
       { name = "latte"; host = "latte"; }
