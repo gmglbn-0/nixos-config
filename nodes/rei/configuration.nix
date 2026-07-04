@@ -88,6 +88,7 @@
     "d /data 0755 root root -"
     "d /data/kaas-bot 0755 gmglbn_0 users -"
     "d /data/kaas-bot/data 0755 gmglbn_0 users -"
+    "d /data/firefly-iii 0755 gmglbn_0 users -"
   ];
 
   # OpenSpeedTest
@@ -98,6 +99,33 @@
       "3000:3000"
       "3001:3001"
     ];
+  };
+
+  # ── Firefly III ──────────────────────────────────────────────────────────
+
+  virtualisation.oci-containers.containers.firefly-iii-db = {
+    image = "postgres:15";
+    environment = {
+      POSTGRES_USER = "firefly";
+      POSTGRES_DB = "firefly";
+    };
+    environmentFiles = [ "/data/firefly-iii/.env.db" ];
+    volumes = [ "/data/firefly-iii/db:/var/lib/postgresql/data" ];
+  };
+
+  virtualisation.oci-containers.containers.firefly-iii = {
+    image = "fireflyiii/core:latest";
+    ports = [ "8080:8080" ];
+    dependsOn = [ "firefly-iii-db" ];
+    environment = {
+      DB_CONNECTION = "pgsql";
+      DB_HOST = "firefly-iii-db";
+      DB_PORT = "5432";
+      DB_DATABASE = "firefly";
+      DB_USERNAME = "firefly";
+    };
+    environmentFiles = [ "/data/firefly-iii/.env" ];
+    volumes = [ "/data/firefly-iii/upload:/var/www/html/storage/upload" ];
   };
 
   # ── Tailscale ────────────────────────────────────────────────────────────
@@ -137,7 +165,7 @@
     ];
   };
 
-  networking.firewall.allowedTCPPorts = [ 3005 ];
+  networking.firewall.allowedTCPPorts = [ 3005 8080 ];
 
   # ── Sudo ─────────────────────────────────────────────────────────────────
   # Headless server — passwordless sudo so nixos-rebuild --sudo works remotely
@@ -150,18 +178,18 @@
   # Runs at 05:00 every day: updates flake, pre-builds all nodes (x86_64 via
   # binfmt emulation), then asks via Telegram whether to switch each node.
   # Credentials: /etc/nixos-updater/telegram.env  (BOT_TOKEN=… CHAT_ID=…)
-  services.nixos-autoupdate = {
-    enable = true;
-    selfNode = "rei";
-    flakeDir = "/home/gmglbn_0/git/nixos-config";
-    telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
-    nodes = [
-      { name = "rei"; host = "localhost"; }
-      { name = "loona"; host = "loona"; }
-      { name = "akira"; host = "akira"; }
-      { name = "latte"; host = "latte"; }
-    ];
-  };
+  # services.nixos-autoupdate = {
+  #   enable = true;
+  #   selfNode = "rei";
+  #   flakeDir = "/home/gmglbn_0/git/nixos-config";
+  #   telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
+  #   nodes = [
+  #     { name = "rei"; host = "localhost"; }
+  #     { name = "loona"; host = "loona"; }
+  #     { name = "akira"; host = "akira"; }
+  #     { name = "latte"; host = "latte"; }
+  #   ];
+  # };
 
   # ── State version ────────────────────────────────────────────────────────
   system.stateVersion = "25.11";
