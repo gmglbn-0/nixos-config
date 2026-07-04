@@ -90,7 +90,7 @@
     "d /data/kaas-bot/data 0755 gmglbn_0 users -"
     "d /data/firefly-iii 0755 gmglbn_0 users -"
     "d /data/firefly-iii/db 0755 gmglbn_0 users -"
-    "d /data/firefly-iii/upload 0755 gmglbn_0 users -"
+    "d /data/firefly-iii/upload 0775 33 users -"
   ];
 
   # OpenSpeedTest
