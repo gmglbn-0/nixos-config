@@ -113,6 +113,7 @@
     };
     environmentFiles = [ "/data/firefly-iii/.env.db" ];
     volumes = [ "/data/firefly-iii/db:/var/lib/postgresql/data" ];
+    extraOptions = [ "--network=firefly-net" ];
   };
 
   virtualisation.oci-containers.containers.firefly-iii = {
@@ -128,6 +129,7 @@
     };
     environmentFiles = [ "/data/firefly-iii/.env" ];
     volumes = [ "/data/firefly-iii/upload:/var/www/html/storage/upload" ];
+    extraOptions = [ "--network=firefly-net" ];
   };
 
   # ── Tailscale ────────────────────────────────────────────────────────────
