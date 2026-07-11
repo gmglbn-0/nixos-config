@@ -263,6 +263,7 @@
         file-roller
         p7zip
         unrar
+        gnome-connections
       ];
     };
   };
