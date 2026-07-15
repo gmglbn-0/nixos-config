@@ -5,7 +5,7 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_6_12;
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
   environment.systemPackages = with pkgs; [
     vim
     wget
