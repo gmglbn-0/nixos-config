@@ -212,6 +212,9 @@
     "d /media/timemachine/gmglbn_0  0770 gmglbn_0  users -"
   ];
 
+  # QEMU Guest Agent
+  services.qemuGuest.enable = true;
+
   # State version
   system.stateVersion = "23.05";
 }
