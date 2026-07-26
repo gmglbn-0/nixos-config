@@ -185,7 +185,7 @@
   services.nixos-autoupdate = {
     enable = true;
     selfNode = "rei";
-    flakeDir = "/home/gmglbn_0/git/gmglbn-0/nixos-config";
+    flakeDir = "/home/gmglbn_0/git/nixos-config";
     telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
     nodes = [
       { name = "rei"; host = "localhost"; }
