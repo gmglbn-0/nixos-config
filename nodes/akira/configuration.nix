@@ -34,8 +34,7 @@
         "server string" = "akira";
         "security" = "user";
         "map to guest" = "bad user";
-        "hosts allow" = "192.168.106. 127.0.0.1 100.";
-
+        "hosts allow" = "192.168.106. 127.0.0.1 100. fe80::/10 fc00::/7 ::1 fddb:baba:dada::/48";
         "server min protocol" = "SMB3_00";
         "client min protocol" = "SMB3_00";
         "log file" = "/var/log/samba/%m.log";

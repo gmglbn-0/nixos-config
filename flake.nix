@@ -42,46 +42,15 @@
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    antigravity-nix.url = "github:jacopone/antigravity-nix";
+    
   };
 
   outputs = inputs @ { self, nixpkgs, nixos-hardware, lanzaboote, nix-cachyos-kernel, noctalia-shell, ... }:
     with builtins; let
-      # Helper functions
+    
       inherit (nixpkgs) lib;
-
-
-
-      # Temporary fix: upstream 1password tarball hash changed (re-upload), nixpkgs hasn't caught up yet.
-      # Remove this overlay once nixpkgs updates the hash for _1password 8.12.21.
-      onepasswordHashFix = final: prev: {
-        _1password-gui = prev._1password-gui.overrideAttrs (old: {
-          src = prev.fetchurl {
-            url = "https://downloads.1password.com/linux/tar/stable/x64/1password-8.12.21.x64.tar.gz";
-            hash = "sha256-JwiMi2iozP6jWSIUtgXla86aSAhuUob7snqtUbeXPpI=";
-          };
-        });
-        _1password = prev._1password.overrideAttrs (old: {
-          src = prev.fetchurl {
-            url = "https://downloads.1password.com/linux/tar/stable/x64/1password-8.12.21.x64.tar.gz";
-            hash = "sha256-JwiMi2iozP6jWSIUtgXla86aSAhuUob7snqtUbeXPpI=";
-          };
-        });
-      };
-
-      # Temporary fix: tpm2-pytss 2.3.0 tests fail with Python 3.13 (abstract class TypeError).
-      # Remove this overlay once nixpkgs fixes tpm2-pytss compatibility.
-      tpm2PytssFix = final: prev: {
-        python3Packages = prev.python3Packages // {
-          tpm2-pytss = prev.python3Packages.tpm2-pytss.overrideAttrs (old: {
-            doCheck = false;
-          });
-        };
-        python313Packages = prev.python313Packages // {
-          tpm2-pytss = prev.python313Packages.tpm2-pytss.overrideAttrs (old: {
-            doCheck = false;
-          });
-        };
-      };
 
       buildSystem = hostname: system: modules:
         nixpkgs.lib.nixosSystem {
@@ -101,7 +70,7 @@
 
             ({ lib, ... }: { networking.hostName = hostname; })
 
-            { nixpkgs.overlays = [ noctalia-shell.overlays.default onepasswordHashFix tpm2PytssFix nix-cachyos-kernel.overlays.default ]; }
+            { nixpkgs.overlays = [ noctalia-shell.overlays.default nix-cachyos-kernel.overlays.default inputs.antigravity-nix.overlays.default ]; }
           ] ++ modules;
         };
 
@@ -121,19 +90,5 @@
     in
     {
       nixosConfigurations = mkHostConfigs;
-
-      # Development shell with useful tools
-      devShells = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        pkgs.mkShell {
-          nativeBuildInputs = with pkgs; [
-            nixpkgs-fmt  # Nix formatter
-            nil          # Nix LSP
-            git
-          ];
-        }
-      );
     };
 }

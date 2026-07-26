@@ -252,7 +252,6 @@
         pkg-config
         freetype
         fontconfig
-        antigravity
         nheko
         signal-desktop
         chromium
@@ -273,9 +272,9 @@
     fastfetch
     hyfetch
     modemmanager
+    google-antigravity-ide
     e2fsprogs
   ];
-
   # Deploy Niri config to user home
   system.activationScripts.niri-config = ''
     mkdir -p /home/gmglbn_0/.config/niri
