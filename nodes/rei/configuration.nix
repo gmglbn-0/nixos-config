@@ -84,10 +84,19 @@
     environmentFiles = [ "/data/kaas-bot/.env" ];
   };
 
+  # ── once-tagger ──────────────────────────────────────────────────────────
+  virtualisation.oci-containers.containers.once-tagger = {
+    image = "once-tagger";
+    volumes = [ "/data/once-tagger/data:/app/data" ];
+    environmentFiles = [ "/data/once-tagger/.env" ];
+  };
+
   systemd.tmpfiles.rules = [
     "d /data 0755 root root -"
     "d /data/kaas-bot 0755 gmglbn_0 users -"
     "d /data/kaas-bot/data 0755 gmglbn_0 users -"
+    "d /data/once-tagger 0755 gmglbn_0 users -"
+    "d /data/once-tagger/data 0755 gmglbn_0 users -"
     "d /data/firefly-iii 0755 gmglbn_0 users -"
     "d /data/firefly-iii/db 0755 gmglbn_0 users -"
     "d /data/firefly-iii/upload 0775 33 users -"
