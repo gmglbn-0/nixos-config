@@ -182,18 +182,18 @@
   # Runs at 05:00 every day: updates flake, pre-builds all nodes (x86_64 via
   # binfmt emulation), then asks via Telegram whether to switch each node.
   # Credentials: /etc/nixos-updater/telegram.env  (BOT_TOKEN=… CHAT_ID=…)
-  # services.nixos-autoupdate = {
-  #   enable = true;
-  #   selfNode = "rei";
-  #   flakeDir = "/home/gmglbn_0/git/nixos-config";
-  #   telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
-  #   nodes = [
-  #     { name = "rei"; host = "localhost"; }
-  #     { name = "loona"; host = "loona"; }
-  #     { name = "akira"; host = "akira"; }
-  #     { name = "latte"; host = "latte"; }
-  #   ];
-  # };
+  services.nixos-autoupdate = {
+    enable = true;
+    selfNode = "rei";
+    flakeDir = "/home/gmglbn_0/git/gmglbn-0/nixos-config";
+    telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
+    nodes = [
+      { name = "rei"; host = "localhost"; }
+      { name = "loona"; host = "loona"; }
+      { name = "akira"; host = "akira"; }
+      { name = "latte"; host = "latte"; }
+    ];
+  };
 
   # ── State version ────────────────────────────────────────────────────────
   system.stateVersion = "25.11";

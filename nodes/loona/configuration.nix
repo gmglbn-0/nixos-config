@@ -221,8 +221,10 @@
   users = {
     defaultUserShell = pkgs.zsh;
     users.gmglbn_0 = {
-      extraGroups = [ "libvirtd" "kvm" "video" "render" "dialout" ];
+      extraGroups = [ "libvirtd" "kvm" "video" "render" "dialout" "adbusers" ];
       packages = with pkgs; [
+        android-tools
+        scrcpy
         thunderbird
         qbittorrent-enhanced
         krita
