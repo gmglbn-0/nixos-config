@@ -75,6 +75,7 @@
       data-root = "/data/docker";
     };
   };
+  virtualisation.oci-containers.backend = "docker";
 
   # ── kaas-bot ─────────────────────────────────────────────────────────────
   virtualisation.oci-containers.containers.kaas-bot = {

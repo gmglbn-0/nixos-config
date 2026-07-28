@@ -5,10 +5,20 @@ let
 
   # ── Script ────────────────────────────────────────────────────────────────
   # Nodes is a list of { name, host, arch } attrsets, serialised for bash.
-  nodesBash = lib.concatMapStringsSep "\n" (n: ''
-    NODES+=("${n.name}")
-    HOSTS["${n.name}"]="${n.host}"
-  '') cfg.nodes;
+  nodesBash = lib.concatMapStringsSep "\n" (n:
+    let
+      metaFile = ../../nodes + "/${n.name}/host-metadata.nix";
+      arch = if builtins.pathExists metaFile then (import metaFile).arch else null;
+      buildHost =
+        if n.buildHost != null && n.buildHost != "" then n.buildHost
+        else if arch == "x86_64-linux" && cfg.x86BuildHost != null then cfg.x86BuildHost
+        else "";
+    in ''
+      NODES+=("${n.name}")
+      HOSTS["${n.name}"]="${n.host}"
+      BUILD_HOSTS["${n.name}"]="${buildHost}"
+    ''
+  ) cfg.nodes;
 
   script = pkgs.writeShellApplication {
     name = "nixos-autoupdate";
@@ -27,6 +37,7 @@ let
       # ── Node list ─────────────────────────────────────────────────────────
       declare -a NODES=()
       declare -A HOSTS=()
+      declare -A BUILD_HOSTS=()
       ${nodesBash}
 
       # ── Helpers ───────────────────────────────────────────────────────────
@@ -65,13 +76,22 @@ let
       declare -A BUILD_LOGS=()
 
       for node in "''${NODES[@]}"; do
-        echo "[autoupdate] Building $node..."
+        build_host="''${BUILD_HOSTS[$node]:-}"
         log_file="/tmp/nixos-autoupdate-build-$node.log"
 
         set +e
-        closure=$(nix build \
-          "${cfg.flakeDir}#nixosConfigurations.$node.config.system.build.toplevel" \
-          --no-link --print-out-paths 2>"$log_file")
+        if [ -n "$build_host" ]; then
+          echo "[autoupdate] Building $node on build-host ($build_host)..."
+          closure=$(nix build \
+            "${cfg.flakeDir}#nixosConfigurations.$node.config.system.build.toplevel" \
+            --eval-store auto --store "ssh-ng://$build_host" \
+            --no-link --print-out-paths 2>"$log_file")
+        else
+          echo "[autoupdate] Building $node locally..."
+          closure=$(nix build \
+            "${cfg.flakeDir}#nixosConfigurations.$node.config.system.build.toplevel" \
+            --no-link --print-out-paths 2>"$log_file")
+        fi
         build_exit=$?
         set -e
 
@@ -263,11 +283,22 @@ in
       description = "Name of this node (used to switch locally instead of via SSH).";
     };
 
+    x86BuildHost = lib.mkOption {
+      type    = lib.types.nullOr lib.types.str;
+      default = "maid";
+      description = "SSH host to build x86_64 configurations on (e.g. maid). Set to null to build locally.";
+    };
+
     nodes = lib.mkOption {
       type = lib.types.listOf (lib.types.submodule {
         options = {
           name = lib.mkOption { type = lib.types.str; description = "Flake output name."; };
           host = lib.mkOption { type = lib.types.str; description = "SSH hostname or IP."; };
+          buildHost = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "SSH host to build this node on. If null, defaults to x86BuildHost for x86_64 nodes.";
+          };
         };
       });
       default = [];
@@ -294,8 +325,8 @@ in
 
   # ── Implementation ────────────────────────────────────────────────────────
   config = lib.mkIf cfg.enable {
-    # x86_64 cross-build support via binfmt (needed for loona/akira/latte)
-    boot.binfmt.emulatedSystems = [ "x86_64-linux" ];
+    # Enable x86_64 binfmt emulation only if no remote x86 build host is configured
+    boot.binfmt.emulatedSystems = lib.mkIf (cfg.x86BuildHost == null) [ "x86_64-linux" ];
 
     # Ensure nixos-rebuild is available to root at runtime
     environment.systemPackages = [ pkgs.nixos-rebuild ];
