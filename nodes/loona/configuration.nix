@@ -1,5 +1,4 @@
 { config, pkgs, lib, inputs, ... }:
-
 {
   imports = [
     ./hardware-configuration.nix
@@ -19,9 +18,10 @@
       pkiBundle = "/var/lib/sbctl";
     };
     initrd = {
-      kernelModules = [ "amdgpu" "i915" ];
+      kernelModules = [ "i915" "amdgpu" ];
       systemd.enable = true;
     };
+    kernelModules = [ "amdgpu" ];
     kernelParams = [
       "modprobe.blacklist=spi-nor"
       "modprobe.blacklist=kvm_amd"
@@ -66,12 +66,15 @@
   };
 
   services.xserver = {
-    videoDrivers = [ "amdgpu" ];
+    videoDrivers = [ "amdgpu" "modesetting" ];
     xkb = {
       layout = "us,ru";
       variant = "";
     };
   };
+
+  # eGPU / Dual GPU offloading daemon
+  services.switcherooControl.enable = true;
 
   services.upower.enable = true;
 
@@ -109,6 +112,12 @@
     powerOnBoot = true;
   };
 
+  # AMD GPU eGPU configuration
+  hardware.amdgpu = {
+    initrd.enable = true;
+    opencl.enable = true;
+  };
+
   # Hardware acceleration
   hardware.graphics = {
     enable = true;
@@ -122,6 +131,8 @@
       intel-media-driver
       intel-vaapi-driver
       intel-compute-runtime
+      rocmPackages.clr
+      rocmPackages.clr.icd
     ];
   };
 
@@ -166,7 +177,7 @@
       enable = true;
       alsa.enable = true;
       alsa.support32Bit = true;
-      pulse.enable = true;   
+      pulse.enable = true;
     };
   };
   security.rtkit.enable = true;
@@ -215,7 +226,7 @@
 
   # Unfree and insecure
   nixpkgs.config.permittedInsecurePackages = [ "olm-3.2.16" ];
-  nixpkgs.config.permittedUnfreePackages = [ "antigravity" ];
+  nixpkgs.config.chromium.enableWideVine = true;
 
   # User
   users = {
@@ -276,7 +287,13 @@
     modemmanager
     google-antigravity-ide
     e2fsprogs
+    libimobiledevice
+    ifuse
+    radeontop
+    clinfo
+    vulkan-tools
   ];
+
   # Deploy Niri config to user home
   system.activationScripts.niri-config = ''
     mkdir -p /home/gmglbn_0/.config/niri

@@ -193,7 +193,7 @@
   # binfmt emulation), then asks via Telegram whether to switch each node.
   # Credentials: /etc/nixos-updater/telegram.env  (BOT_TOKEN=… CHAT_ID=…)
   services.nixos-autoupdate = {
-    enable = true;
+    enable = false;
     selfNode = "rei";
     flakeDir = "/home/gmglbn_0/git/nixos-config";
     telegramCredentialsFile = "/etc/nixos-updater/telegram.env";
