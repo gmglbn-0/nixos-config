@@ -44,10 +44,13 @@
     };
 
     antigravity-nix.url = "github:jacopone/antigravity-nix";
-    
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs @ { self, nixpkgs, nixos-hardware, lanzaboote, nix-cachyos-kernel, noctalia-shell, ... }:
+  outputs = inputs @ { self, nixpkgs, nixos-hardware, lanzaboote, nix-cachyos-kernel, noctalia-shell, disko, ... }:
     with builtins; let
     
       inherit (nixpkgs) lib;
@@ -60,6 +63,8 @@
             prelude = import ./common/prelude.nix;
           };
           modules = [
+            disko.nixosModules.disko
+
             ./common/configuration.nix
 
             ./modules/default.nix
