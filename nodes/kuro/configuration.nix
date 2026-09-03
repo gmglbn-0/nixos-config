@@ -24,7 +24,7 @@
     extraGroups = [ "wheel" "video" "audio" "networkmanager" "input" ];
   };
 
-  # ── Desktop Environment (KDE Plasma 6 + Bigscreen TV Layout) ─────────────
+  # ── Desktop & TV Interface (KDE Plasma 6 + Plasma Bigscreen TV Box UI) ───
   services.xserver.enable = true;
   services.desktopManager.plasma6.enable = true;
 
@@ -37,6 +37,7 @@
       enable = true;
       user = "tv";
     };
+    defaultSession = "plasma";
   };
 
   # ── Graphics & Hardware Acceleration (Intel N100 Alder Lake-N) ───────────
@@ -86,7 +87,6 @@
   ];
 
   # ── Power & Display Rules ────────────────────────────────────────────────
-  # Prevent screen dimming / sleep during media playback
   powerManagement.enable = true;
 
   system.stateVersion = "24.11";
