@@ -76,7 +76,6 @@
 
     # HDMI-CEC Utilities (Pulse-Eight USB-CEC Adapter support)
     libcec
-    cec-utils
 
     # System & Diagnostics
     intel-gpu-tools
