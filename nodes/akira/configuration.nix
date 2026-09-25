@@ -174,6 +174,9 @@
   # Tailscale
   services.tailscale.enable = true;
 
+  # ── Sudo ─────────────────────────────────────────────────────────────────
+  security.sudo.wheelNeedsPassword = false;
+
   # Nix
   nix.settings.trusted-users = [ "root" "gmglbn_0" "dipierro" ];
 

@@ -1,1 +1,3 @@
-## nothing to ignore
+# Nix build artifacts
+result
+result-*

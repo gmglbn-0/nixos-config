@@ -66,6 +66,9 @@
     lshw
   ];
 
+  # ── Sudo ─────────────────────────────────────────────────────────────────
+  security.sudo.wheelNeedsPassword = false;
+
   # State version
   system.stateVersion = "24.11";
 }

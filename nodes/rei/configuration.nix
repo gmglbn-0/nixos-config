@@ -49,6 +49,7 @@
   # Peripheral firmware is committed to the repo at nodes/rei/firmware/
   hardware.asahi.enable = true;
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
+  hardware.asahi.avd.enable = false;
 
   # ── Power management ─────────────────────────────────────────────────────
   powerManagement.enable = true;
@@ -76,12 +77,21 @@
 
   # ── Programs & Shell ─────────────────────────────────────────────────────
   programs.firefox.enable = true;
+  programs._1password.enable = true;
+  programs._1password-gui = {
+    enable = true;
+    polkitPolicyOwners = [ "gmglbn_0" ];
+  };
   programs.zsh.enable = true;
   programs.zsh.ohMyZsh = {
     enable = true;
     plugins = [ "git" "sudo" ];
   };
   users.defaultUserShell = pkgs.zsh;
+
+  environment.shellAliases = {
+    deploy = "/home/gmglbn_0/git/nixos-config/scripts/deploy.sh";
+  };
   environment.systemPackages = with pkgs; [
     alacritty
     fastfetch
@@ -99,14 +109,34 @@
       alacritty
       fastfetch
       htop
+      ayugram-desktop
+      google-antigravity-ide
+      zed-editor
     ];
   };
 
   # ── Sudo ─────────────────────────────────────────────────────────────────
   security.sudo.wheelNeedsPassword = false;
 
-  # ── Nix ──────────────────────────────────────────────────────────────────
+  # ── Nix & Distributed Builds ─────────────────────────────────────────────
   nix.settings.trusted-users = [ "root" "gmglbn_0" ];
+  nix.distributedBuilds = true;
+  nix.buildMachines = [
+    {
+      hostName = "indulgence";
+      system = "x86_64-linux";
+      protocol = "ssh-ng";
+      sshUser = "gmglbn_0";
+      sshKey = "/root/.ssh/id_ed25519";
+      maxJobs = 8;
+      speedFactor = 2;
+      supportedFeatures = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
+      mandatoryFeatures = [ ];
+    }
+  ];
+  nix.extraOptions = ''
+    builders-use-substitutes = true
+  '';
 
   # ── State version ────────────────────────────────────────────────────────
   system.stateVersion = "25.11";
