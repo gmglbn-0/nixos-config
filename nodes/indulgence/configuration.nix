@@ -7,7 +7,7 @@
 
   # ── Networking ───────────────────────────────────────────────────────────
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 3000 3001 3005 8080 ];
+  networking.firewall.allowedTCPPorts = [ 3000 3001 3005 8080 8085 ];
 
   # ── Time & Locale ────────────────────────────────────────────────────────
   time.timeZone = "Asia/Yerevan";
@@ -81,8 +81,24 @@
     };
   };
 
-  # ── Directory rules ──────────────────────────────────────────────────────
+  # ── avb-builder ──────────────────────────────────────────────────────────
+  virtualisation.oci-containers.containers.avb-builder = {
+    image = "avb-builder:latest";
+    ports = [ "8085:8085" ];
+    volumes = [
+      "/data/avb-builder:/data"
+    ];
+    environment = {
+      AVB_DATA_DIR = "/data";
+      AVB_PORT = "8085";
+      AVB_HOST = "0.0.0.0";
+      AVB_BASE_URL = "http://100.64.0.131:8085";
+    };
+  };
+
+  # ── Directory rules & dev nodes ──────────────────────────────────────────
   systemd.tmpfiles.rules = [
+    "c! /dev/net/tun 0666 root root - 10:200"
     "d /data 0755 root root -"
     "d /data/kaas-bot 0755 gmglbn_0 users -"
     "d /data/kaas-bot/data 0755 gmglbn_0 users -"
@@ -91,6 +107,12 @@
     "d /data/firefly-iii 0755 gmglbn_0 users -"
     "d /data/firefly-iii/db 0755 gmglbn_0 users -"
     "d /data/firefly-iii/upload 0775 33 users -"
+    "d /data/avb-builder 0755 gmglbn_0 users -"
+    "d /data/avb-builder/keys 0700 gmglbn_0 users -"
+    "d /data/avb-builder/storage 0755 gmglbn_0 users -"
+    "d /data/avb-builder/www 0755 gmglbn_0 users -"
+    "d /data/avb-builder/www/ota 0755 gmglbn_0 users -"
+    "d /data/avb-builder/www/builds 0755 gmglbn_0 users -"
   ];
 
   # ── Tailscale ────────────────────────────────────────────────────────────
